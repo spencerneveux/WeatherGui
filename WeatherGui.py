@@ -1,34 +1,8 @@
 import requests
-import json
 import tkinter as tk
 from tkinter import ttk
 
-
 key = "ffb4f8b598bba4bdf868d38b6099cb46"
-location = "Long Beach"
-
-# ====================================
-# API
-# ====================================
-
-
-class API:
-    def __init__(self, api_key, location):
-        self.api_key = api_key
-        self.location = location
-
-    # Method to retrieve data from API
-    def get_weather(self):
-        # Url api call for city
-        url = "https://api.openweathermap.org/data/2.5/weather?q={}&units=imperial&appid={}".format(self.location, self.api_key)
-        r = requests.get(url)
-        return r.json()
-
-
-    def get_zip_code(self):
-        print(zip)
-        # zip_code = entry.get()
-        # return zip_code
 
 # ====================================
 # GUI
@@ -36,54 +10,81 @@ class API:
 
 
 class GUI:
-    def __init__(self):
-        window = tk.Tk()
-        window.title("Weather App")
-        window.geometry("225x320")
+    def __init__(self, master):
+        master.title('Weather Forecast')
+        master.geometry("200x250")
+        master.resizable(False, False)
+        master.configure(background='#000000')
+
+        # Styling
+        self.style = ttk.Style()
+        self.style.configure('TFrame', background='#000000')
+        self.style.configure('nv.TLabel', background='#000000')
+        self.style.configure('TButton', background='#000000')
+        self.style.configure('TLabel', foreground='#000000', font=('Arial', 11), fg="#FFFFFF")
+
+        self.window = ttk.Frame(master)
+        self.window.pack()
 
         # Creating Frame
-        navigation_frame = ttk.LabelFrame(window, width=200, height=300, text="Type in your zip code")
-        navigation_frame.pack()
-        navigation_frame.config(height=100, width=200, padding=(30, 15))
+        self.navigation_frame = ttk.LabelFrame(self.window, width=200, height=300, text="Type in your zip code", style="nv.TLabel")
+        self.navigation_frame.pack()
+        self.navigation_frame.config(height=100, width=200, padding=(30, 15))
 
         # Entry box
-        zip_code = ttk.Entry(navigation_frame)
-        zip_code.grid(pady=5)
+        self.zip_code = ttk.Entry(self.navigation_frame)
+        self.zip_code.grid(pady=5)
 
         # Enter Button
-        button = ttk.Button(navigation_frame, text="Find Weather", command=get_zip_code)
-        button.grid()
+        self.button = ttk.Button(self.navigation_frame, text="Find Weather", command=self.update_results)
+        self.button.grid()
 
         # Create new Frame for results
-        results_frame = ttk.Frame(window, relief=tk.RIDGE)
-        results_frame.pack()
-        results_frame.config(height=200, width=200, padding=(30, 15))
+        self.results_frame = ttk.Frame(self.window, relief=tk.RIDGE, width=200, height=200)
+        self.results_frame.pack(fill=None, expand=False)
+        self.results_frame.config(height=200, width=200, padding=(30, 15))
 
         # Create text to display city
-        searched_city = weather["name"] # this needs to extract only the city name
-        city_label = ttk.Label(results_frame, text=searched_city)
-        city_label.grid(row=0, column=0)
+        searched_city = "City"
+        self.city_label = ttk.Label(self.results_frame, text=searched_city)
+        self.city_label.grid(row=0, column=0)
 
         # Create text to display status
-        weather_status = weather["weather"][0]["description"]
-        weather_status_label = ttk.Label(results_frame, text=weather_status)
-        weather_status_label.grid(row=1, column=0)
+        weather_status = "Weather"
+        self.weather_status_label = ttk.Label(self.results_frame, text=weather_status)
+        self.weather_status_label.grid(row=1, column=0)
 
         # Create temperature label
-        temperature = str(weather["main"]["temp"]) + " F"
-        temperature_label = ttk.Label(results_frame, text=temperature)
-        temperature_label.grid()
+        # temperature =
+        temperature = "N/A"
+        self.temperature_label = ttk.Label(self.results_frame, text=temperature)
+        self.temperature_label.grid()
 
-        # Main Loop
-        window.mainloop()
+    def get_zip_code(self):
+        zip_code = self.zip_code.get()
+        print(zip_code)
+        return zip_code
+
+        # Method to retrieve data from API
+    def get_weather(self):
+        zip_code = self.get_zip_code()
+        # Url api call for city
+        url = "https://api.openweathermap.org/data/2.5/weather?zip={}&units=imperial&appid={}".format(zip_code, key)
+        r = requests.get(url)
+        return r.json()
+
+    def update_results(self):
+        weather = self.get_weather()
+        self.city_label.config(text=weather["name"])
+        self.weather_status_label.config(text=weather["weather"][0]["description"])
+        self.temperature_label.config(text=str(weather["main"]["temp"]) + " F")
+
 
 def main():
-    api = API(key, location)
-    weather = api.get_weather()
-    print(weather)
-#     weather = get_weather(key, "90803")
-# print(weather)
-# print(weather["name"])
+    root = tk.Tk()
+    gui = GUI(root)
+    root.mainloop()
+
 
 if __name__ == '__main__':
     main()
